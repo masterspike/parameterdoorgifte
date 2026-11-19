@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Doorgifte richting iframe-pagina</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="intro">
+        <p class="eyebrow">Statische website</p>
+        <h1>Parameterdoorgifte</h1>
+        <p class="lead">
+          Deze pagina krijgt 3 inkomende parameters vanuit SSCV2 en toont ze hieronder.
+          <a id="example-link" href="?naam=Lot&amp;afdeling=Balie&amp;referentie=EILAB01">dit voorbeeld</a>.
+        </p>
+      </header>
+
+      <section class="values" aria-label="Ontvangen parameters">
+        <article class="card" data-key="naam">
+          <h2>naam</h2>
+          <p class="value" data-value="naam">—</p>
+        </article>
+        <article class="card" data-key="afdeling">
+          <h2>afdeling</h2>
+          <p class="value" data-value="afdeling">—</p>
+        </article>
+        <article class="card" data-key="referentie">
+          <h2>referentie</h2>
+          <p class="value" data-value="referentie">—</p>
+        </article>
+      </section>
+
+      <form class="composer" id="composer">
+        <label>
+          naam
+          <input name="naam" type="text" autocomplete="off" placeholder="Lot" />
+        </label>
+        <label>
+          afdeling
+          <input name="afdeling" type="text" autocomplete="off" placeholder="Balie" />
+        </label>
+        <label>
+          referentie
+          <input name="referentie" type="text" autocomplete="off" placeholder="EILAB01" />
+        </label>
+        <button type="submit">Toon in de URL</button>
+      </form>
+
+      <p class="url">
+        Huidige aanroep
+        <code id="current-url"></code>
+      </p>
+    </main>
+    <script src="js/app.js"></script>
+  </body>
+</html>
