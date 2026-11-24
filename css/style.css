@@ -241,6 +241,63 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+.button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.button-group button {
+  width: 100%;
+}
+
+#cancel-btn {
+  background: #f04438;
+  border-color: #f04438;
+}
+
+#cancel-btn:hover {
+  background: #d9332f;
+  border-color: #d9332f;
+}
+
+#cancel-btn:active {
+  background: #ba2f26;
+  border-color: #ba2f26;
+}
+
+.notification {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.notification-info {
+  background: #cfe9ff;
+  color: #0043a4;
+  border: 1px solid #0070f2;
+}
+
+.notification-success {
+  background: #c6f7d5;
+  color: #005a3b;
+  border: 1px solid #00a854;
+}
+
+.notification-warning {
+  background: #fff4ce;
+  color: #663c00;
+  border: 1px solid #ffa500;
+}
+
+.notification-error {
+  background: #ffd5d5;
+  color: #ba0000;
+  border: 1px solid #f04438;
+}
+
 .url {
   display: grid;
   gap: 0.25rem;

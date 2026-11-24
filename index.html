@@ -43,6 +43,8 @@
             <p class="value" data-value="referentie">—</p>
           </article>
         </section>
+
+        <div id="notification" class="notification" style="display: none;"></div>
       </section>
 
       <section class="panel">
@@ -60,7 +62,14 @@
             Referentie
             <input name="referentie" type="text" autocomplete="off" placeholder="EILAB01" />
           </label>
-          <button type="submit">Toon in de URL</button>
+        <label>
+          Update e-mail adres
+          <input name="email" type="email" autocomplete="off" placeholder="user@example.com" />
+        </label>
+        <div class="button-group">
+          <button type="submit" name="action" value="save">Opslaan</button>
+          <button type="button" id="cancel-btn">Annuleren</button>
+        </div>
         </form>
 
         <div class="url">

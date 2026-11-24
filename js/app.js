@@ -1,9 +1,12 @@
 const KEYS = ["naam", "afdeling", "referentie"];
 const PARENT_ORIGIN = "https://my1000354.de1.test.crm.cloud.sap";
+const FORBIDDEN_EMAIL = "aik.leemreize@ns.nl";
 
 const params = new URLSearchParams(window.location.search);
 const form = document.querySelector("#composer");
 const currentUrl = document.querySelector("#current-url");
+const cancelBtn = document.querySelector("#cancel-btn");
+const notificationEl = document.querySelector("#notification");
 
 function readValue(key) {
   return (params.get(key) ?? "").trim();
@@ -13,17 +16,18 @@ function canPostMessage() {
   return window.parent !== window && window.parent !== null;
 }
 
-function sendToParent(paramData) {
+function sendToParent(notificationType, data, message = "") {
   if (!canPostMessage()) {
     console.warn("No parent frame available for postMessage");
     return false;
   }
 
-  const message = {
-    type: "parameterdoorgifte:update",
+  const messagePayload = {
+    type: "parameterdoorgifte:notification",
     timestamp: Date.now(),
-    status: "success",
-    data: paramData,
+    level: notificationType,
+    message: message,
+    data: data,
     metadata: {
       source: "parameterdoorgifte-iframe",
       version: "1.0",
@@ -32,8 +36,8 @@ function sendToParent(paramData) {
   };
 
   try {
-    window.parent.postMessage(message, PARENT_ORIGIN);
-    console.log("Message sent to parent:", message);
+    window.parent.postMessage(messagePayload, PARENT_ORIGIN);
+    console.log(`[${notificationType}] Message sent to parent:`, messagePayload);
     return true;
   } catch (error) {
     console.error("Failed to send postMessage to parent:", error);
@@ -46,16 +50,36 @@ function handlePostMessageError(error) {
   console.error("postMessage error details:", error.message);
 }
 
-function showSuccessIndicator() {
-  const btn = document.querySelector("button[type='submit']");
-  const original = btn.textContent;
-  btn.textContent = "✓ Verstuurd naar SAP";
-  btn.disabled = true;
+function showNotification(type, text) {
+  notificationEl.textContent = text;
+  notificationEl.className = `notification notification-${type.toLowerCase()}`;
+  notificationEl.style.display = "block";
 
   setTimeout(() => {
-    btn.textContent = original;
-    btn.disabled = false;
-  }, 2000);
+    notificationEl.style.display = "none";
+  }, 3000);
+}
+
+function validateEmail(email) {
+  if (!email) return { valid: true, error: null };
+  if (email.toLowerCase() === FORBIDDEN_EMAIL.toLowerCase()) {
+    return {
+      valid: false,
+      error: `E-mail adres '${FORBIDDEN_EMAIL}' is niet toegestaan`,
+    };
+  }
+  return { valid: true, error: null };
+}
+
+function collectParameters() {
+  const collected = {};
+  for (const key of KEYS) {
+    const value = form.elements[key].value.trim();
+    collected[key] = value || "";
+  }
+  const email = form.elements["email"].value.trim();
+  if (email) collected.email = email;
+  return collected;
 }
 
 function render() {
@@ -72,29 +96,57 @@ function render() {
   currentUrl.textContent = window.location.href;
 }
 
-function collectParameters() {
-  const collected = {};
-  for (const key of KEYS) {
-    const value = form.elements[key].value.trim();
-    collected[key] = value || "";
-  }
-  return collected;
-}
-
 render();
 
 const initialParams = Object.fromEntries(
   KEYS.map((k) => [k, readValue(k)])
 );
-sendToParent(initialParams);
+
+if (Object.values(initialParams).some((v) => v)) {
+  sendToParent("INFO", initialParams, "Parameters geladen vanuit URL");
+  showNotification(
+    "INFO",
+    "✓ Parameters succesvol geladen vanuit URL"
+  );
+}
+
+form.addEventListener("input", () => {
+  const params = collectParameters();
+  const anyFilled = Object.values(params).some((v) => v);
+  if (anyFilled) {
+    sendToParent("INFO", params, "Invoer gedetecteerd");
+  }
+});
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
 
-  const updated = collectParameters();
+  const email = form.elements["email"].value.trim();
+  const emailValidation = validateEmail(email);
 
-  const success = sendToParent(updated);
-  if (success) {
-    showSuccessIndicator();
+  if (!emailValidation.valid) {
+    sendToParent("ERROR", { email }, emailValidation.error);
+    showNotification("ERROR", "❌ " + emailValidation.error);
+    return;
   }
+
+  const params = collectParameters();
+  sendToParent("SUCCESS", params, "Gegevens succesvol opgeslagen");
+  showNotification("SUCCESS", "✅ Gegevens succesvol opgeslagen");
+  
+  setTimeout(() => {
+    form.reset();
+    render();
+  }, 1500);
+});
+
+cancelBtn.addEventListener("click", () => {
+  const params = collectParameters();
+  sendToParent("WARNING", params, "Bewerking geannuleerd door gebruiker");
+  showNotification("WARNING", "⚠️ Bewerking geannuleerd");
+  
+  setTimeout(() => {
+    form.reset();
+    render();
+  }, 1500);
 });
