@@ -1,5 +1,4 @@
 const KEYS = ["naam", "afdeling", "referentie"];
-const PARENT_ORIGIN = "https://my1000354.de1.test.crm.cloud.sap";
 const FORBIDDEN_EMAIL = "aik.leemreize@ns.nl";
 
 const params = new URLSearchParams(window.location.search);
@@ -11,27 +10,19 @@ function readValue(key) {
   return (params.get(key) ?? "").trim();
 }
 
-function canPostMessage() {
-  return window.parent !== window && window.parent !== null;
-}
-
-function sendToParent(notificationType, data, message = "") {
+function sendToParent(severity, mainMessage, detailsArray = []) {
   const messagePayload = {
-    type: "parameterdoorgifte:notification",
-    timestamp: Date.now(),
-    level: notificationType,
-    message: message,
-    data: data,
-    metadata: {
-      source: "parameterdoorgifte-iframe",
-      version: "1.0",
-      url: window.location.href,
+    operation: "showMessage",
+    params: {
+      message: mainMessage,
+      severity: severity.toUpperCase(),
+      details: detailsArray,
     },
   };
 
   try {
-    window.parent.postMessage(messagePayload, PARENT_ORIGIN);
-    console.log(`[${notificationType}] Notification sent to parent:`, messagePayload);
+    window.parent.postMessage(messagePayload, "*");
+    console.log(`[${severity}] Notification sent to parent:`, messagePayload);
     return true;
   } catch (error) {
     console.error("Failed to send postMessage to parent:", error);
@@ -82,14 +73,26 @@ const initialParams = Object.fromEntries(
 );
 
 if (Object.values(initialParams).some((v) => v)) {
-  sendToParent("INFO", initialParams, "Parameters geladen vanuit URL");
+  const details = KEYS
+    .filter((k) => initialParams[k])
+    .map((k) => ({
+      message: `${k}: ${initialParams[k]}`,
+      severity: "INFO",
+    }));
+  sendToParent("INFO", "Parameters geladen vanuit URL", details);
 }
 
 form.addEventListener("input", () => {
   const params = collectParameters();
   const anyFilled = Object.values(params).some((v) => v);
   if (anyFilled) {
-    sendToParent("INFO", params, "Invoer gedetecteerd");
+    const details = Object.entries(params)
+      .filter(([_, v]) => v)
+      .map(([k, v]) => ({
+        message: `${k}: ${v}`,
+        severity: "INFO",
+      }));
+    sendToParent("INFO", "Invoer gedetecteerd", details);
   }
 });
 
@@ -100,13 +103,24 @@ form.addEventListener("submit", (event) => {
   const emailValidation = validateEmail(email);
 
   if (!emailValidation.valid) {
-    sendToParent("ERROR", { email }, emailValidation.error);
+    sendToParent("ERROR", emailValidation.error, [
+      {
+        message: `E-mail adres: ${email}`,
+        severity: "ERROR",
+      },
+    ]);
     return;
   }
 
   const params = collectParameters();
-  sendToParent("SUCCESS", params, "Gegevens succesvol opgeslagen");
-  
+  const details = Object.entries(params)
+    .filter(([_, v]) => v)
+    .map(([k, v]) => ({
+      message: `${k}: ${v}`,
+      severity: "SUCCESS",
+    }));
+  sendToParent("SUCCESS", "Gegevens succesvol opgeslagen", details);
+
   setTimeout(() => {
     form.reset();
     render();
@@ -115,8 +129,14 @@ form.addEventListener("submit", (event) => {
 
 cancelBtn.addEventListener("click", () => {
   const params = collectParameters();
-  sendToParent("WARNING", params, "Bewerking geannuleerd door gebruiker");
-  
+  const details = Object.entries(params)
+    .filter(([_, v]) => v)
+    .map(([k, v]) => ({
+      message: `${k}: ${v}`,
+      severity: "WARNING",
+    }));
+  sendToParent("WARNING", "Bewerking geannuleerd door gebruiker", details);
+
   setTimeout(() => {
     form.reset();
     render();
