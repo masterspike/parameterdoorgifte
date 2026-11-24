@@ -30,40 +30,18 @@
         </div>
 
         <section class="facets" aria-label="Ontvangen parameters">
-          <article class="facet" data-key="naam">
-            <h2>Naam</h2>
-            <p class="value" data-value="naam">—</p>
-          </article>
-          <article class="facet" data-key="afdeling">
-            <h2>Afdeling</h2>
-            <p class="value" data-value="afdeling">—</p>
-          </article>
-          <article class="facet" data-key="referentie">
-            <h2>Referentie</h2>
-            <p class="value" data-value="referentie">—</p>
-          </article>
-        </section>
+        <div id="facets-container">
+          <!-- Dynamisch gefilled vanuit JavaScript -->
+        </div>
+      </section>
       </section>
 
       <section class="panel">
         <h2 class="panel-title">Parameters</h2>
         <form class="composer" id="composer">
-          <label>
-            Naam
-            <input name="naam" type="text" autocomplete="off" placeholder="Lot" />
-          </label>
-          <label>
-            Afdeling
-            <input name="afdeling" type="text" autocomplete="off" placeholder="Balie" />
-          </label>
-          <label>
-            Referentie
-            <input name="referentie" type="text" autocomplete="off" placeholder="EILAB01" />
-          </label>
-        <label>
-          Update e-mail adres
-          <input name="email" type="email" autocomplete="off" placeholder="user@example.com" />
-        </label>
+        <div id="fields-container">
+          <!-- Dynamisch gefilled vanuit JavaScript -->
+        </div>
         <div class="button-group">
           <button type="submit" name="action" value="save">Opslaan</button>
           <button type="button" id="cancel-btn">Annuleren</button>

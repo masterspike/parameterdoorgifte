@@ -174,9 +174,26 @@ label,
 
 .composer {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   align-items: end;
+  grid-template-areas: "fields fields fields buttons";
+}
+
+#fields-container {
+  display: contents;
+}
+
+.button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  grid-column: 1 / -1;
+  grid-area: buttons;
+  justify-self: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem auto 0;
 }
 
 label {
