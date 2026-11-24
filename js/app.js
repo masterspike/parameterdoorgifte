@@ -6,7 +6,6 @@ const params = new URLSearchParams(window.location.search);
 const form = document.querySelector("#composer");
 const currentUrl = document.querySelector("#current-url");
 const cancelBtn = document.querySelector("#cancel-btn");
-const notificationEl = document.querySelector("#notification");
 
 function readValue(key) {
   return (params.get(key) ?? "").trim();
@@ -17,11 +16,6 @@ function canPostMessage() {
 }
 
 function sendToParent(notificationType, data, message = "") {
-  if (!canPostMessage()) {
-    console.warn("No parent frame available for postMessage");
-    return false;
-  }
-
   const messagePayload = {
     type: "parameterdoorgifte:notification",
     timestamp: Date.now(),
@@ -37,27 +31,12 @@ function sendToParent(notificationType, data, message = "") {
 
   try {
     window.parent.postMessage(messagePayload, PARENT_ORIGIN);
-    console.log(`[${notificationType}] Message sent to parent:`, messagePayload);
+    console.log(`[${notificationType}] Notification sent to parent:`, messagePayload);
     return true;
   } catch (error) {
     console.error("Failed to send postMessage to parent:", error);
-    handlePostMessageError(error);
     return false;
   }
-}
-
-function handlePostMessageError(error) {
-  console.error("postMessage error details:", error.message);
-}
-
-function showNotification(type, text) {
-  notificationEl.textContent = text;
-  notificationEl.className = `notification notification-${type.toLowerCase()}`;
-  notificationEl.style.display = "block";
-
-  setTimeout(() => {
-    notificationEl.style.display = "none";
-  }, 3000);
 }
 
 function validateEmail(email) {
@@ -104,10 +83,6 @@ const initialParams = Object.fromEntries(
 
 if (Object.values(initialParams).some((v) => v)) {
   sendToParent("INFO", initialParams, "Parameters geladen vanuit URL");
-  showNotification(
-    "INFO",
-    "✓ Parameters succesvol geladen vanuit URL"
-  );
 }
 
 form.addEventListener("input", () => {
@@ -126,13 +101,11 @@ form.addEventListener("submit", (event) => {
 
   if (!emailValidation.valid) {
     sendToParent("ERROR", { email }, emailValidation.error);
-    showNotification("ERROR", "❌ " + emailValidation.error);
     return;
   }
 
   const params = collectParameters();
   sendToParent("SUCCESS", params, "Gegevens succesvol opgeslagen");
-  showNotification("SUCCESS", "✅ Gegevens succesvol opgeslagen");
   
   setTimeout(() => {
     form.reset();
@@ -143,7 +116,6 @@ form.addEventListener("submit", (event) => {
 cancelBtn.addEventListener("click", () => {
   const params = collectParameters();
   sendToParent("WARNING", params, "Bewerking geannuleerd door gebruiker");
-  showNotification("WARNING", "⚠️ Bewerking geannuleerd");
   
   setTimeout(() => {
     form.reset();
